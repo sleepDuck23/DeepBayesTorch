@@ -12,6 +12,7 @@ torch = "2.2.2"
 torchvision = "0.17.2"
 matplotlib = "^3.9.2"
 black = "^24.10.0"
+cleverhans = "^4.0.0"
 
 
 [build-system]

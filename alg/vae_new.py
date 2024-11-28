@@ -43,19 +43,19 @@ def construct_optimizer(X_ph, Y_ph, enc, dec, ll, K, vae_type="A"):
     fea = enc_conv(X_)
 
     if vae_type == "A":
-        from lowerbound_functions import lowerbound_A as lowerbound_func
+        from .lowerbound_functions import lowerbound_A as lowerbound_func
     elif vae_type == "B":
-        from lowerbound_functions import lowerbound_B as lowerbound_func
+        from .lowerbound_functions import lowerbound_B as lowerbound_func
     elif vae_type == "C":
-        from lowerbound_functions import lowerbound_C as lowerbound_func
+        from .lowerbound_functions import lowerbound_C as lowerbound_func
     elif vae_type == "D":
-        from lowerbound_functions import lowerbound_D as lowerbound_func
+        from .lowerbound_functions import lowerbound_D as lowerbound_func
     elif vae_type == "E":
-        from lowerbound_functions import lowerbound_E as lowerbound_func
+        from .lowerbound_functions import lowerbound_E as lowerbound_func
     elif vae_type == "F":
-        from lowerbound_functions import lowerbound_F as lowerbound_func
+        from .lowerbound_functions import lowerbound_F as lowerbound_func
     elif vae_type == "G":
-        from lowerbound_functions import lowerbound_G as lowerbound_func
+        from .lowerbound_functions import lowerbound_G as lowerbound_func
     else:
         raise ValueError(f"Unknown VAE type: {vae_type}")
 

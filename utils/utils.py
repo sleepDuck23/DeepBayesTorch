@@ -49,8 +49,10 @@ def save_params(model, filename, checkpoint):
         filename (str): Path to save the parameters.
         checkpoint (int): Checkpoint index for versioning.
     """
+    encoder, generator = model
     filename = f"{filename}_{checkpoint}.pth"
-    torch.save(model.state_dict(), filename)
+    state_dict = {"encoder": encoder.state_dict(), "generator": generator.state_dict()}
+    torch.save(state_dict, filename)
     print(f"Parameters saved at {filename}")
 
 
@@ -63,8 +65,11 @@ def load_params(model, filename, checkpoint):
         checkpoint (int): Checkpoint index for versioning.
     """
     filename = f"{filename}_{checkpoint}.pth"
+    encoder, generator = model
     if os.path.exists(filename):
-        model.load_state_dict(torch.load(filename))
+        state_dict = torch.load(filename)
+        encoder.load_state_dict(state_dict["encoder"])
+        generator.load_state_dict(state_dict["generator"])
         print(f"Loaded parameters from {filename}")
     else:
         print(f"Checkpoint {filename} not found. Skipping parameter loading.")
