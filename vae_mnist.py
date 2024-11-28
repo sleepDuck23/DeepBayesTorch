@@ -19,7 +19,6 @@ n_iter = 100
 batch_size = 50
 lr = 1e-4
 K = 1
-checkpoint = -1
 
 
 def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint):
@@ -140,4 +139,5 @@ def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint):
 if __name__ == "__main__":
     data_name = "mnist"
     vae_type = str(sys.argv[1])
+    checkpoint = int(sys.argv[2])
     main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint)

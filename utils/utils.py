@@ -67,7 +67,8 @@ def load_params(model, filename, checkpoint):
     filename = f"{filename}_{checkpoint}.pth"
     encoder, generator = model
     if os.path.exists(filename):
-        state_dict = torch.load(filename)
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        state_dict = torch.load(filename, map_location=device)
         encoder.load_state_dict(state_dict["encoder"])
         generator.load_state_dict(state_dict["generator"])
         print(f"Loaded parameters from {filename}")
