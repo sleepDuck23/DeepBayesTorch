@@ -1,7 +1,5 @@
 import os
-import pickle
 
-import numpy as np
 import torch
 
 
@@ -18,7 +16,7 @@ def load_data(data_name, path, labels=None, conv=False, seed=0):
         tuple: data_train, data_test, labels_train, labels_test
     """
     if data_name == "mnist":
-        from mnist import CustomMNISTDataset
+        from .mnist import CustomMNISTDataset
 
         train_dataset = CustomMNISTDataset(
             path=path, train=True, digits=labels, conv=conv
@@ -28,7 +26,7 @@ def load_data(data_name, path, labels=None, conv=False, seed=0):
         )
 
     elif data_name == "cifar10":
-        from cifar10 import CustomCIFAR10Dataset
+        from .cifar10 import CustomCIFAR10Dataset
 
         train_dataset = CustomCIFAR10Dataset(
             path=path, train=True, labels=labels, conv=conv, seed=seed

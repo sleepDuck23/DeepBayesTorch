@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from mlp import MLPLayer
+
+from .mlp import MLPLayer
 
 
 class Generator(nn.Module):

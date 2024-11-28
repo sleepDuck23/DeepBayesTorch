@@ -2,8 +2,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from deconv import DeconvLayer
-from mlp import MLPLayer
+
+from .deconv import DeconvLayer
+from .mlp import MLPLayer
 
 
 class Generator(nn.Module):
@@ -80,7 +81,6 @@ class Generator(nn.Module):
 
         # Reshape MLP output to match the first decoder input shape
         decoder_initial_shape = self.conv_layers[0].input_shape
-        print(f"Decoder initial shape: {decoder_initial_shape}")
         out = out.view(
             out.shape[0],
             decoder_initial_shape[2],  # Channels
@@ -90,7 +90,6 @@ class Generator(nn.Module):
 
         for layer in self.conv_layers:
             out = layer(out)
-            print(f"{layer.name}: output shape {out.shape}")
         return out
 
 

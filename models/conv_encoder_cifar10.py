@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
-from convnet import ConvNet, construct_filter_shapes
-from mlp import MLPLayer
+
+from .convnet import ConvNet, construct_filter_shapes
+from .mlp import MLPLayer
 
 
 class ConvEncoder(nn.Module):

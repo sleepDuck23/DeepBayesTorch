@@ -2,9 +2,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from convnet import ConvNet, construct_filter_shapes
-from deconv import DeconvLayer
-from mlp import MLPLayer
+
+from .convnet import ConvNet, construct_filter_shapes
+from .mlp import MLPLayer
 
 
 class Generator(nn.Module):

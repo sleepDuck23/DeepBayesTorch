@@ -27,10 +27,13 @@ class CustomMNISTDataset(torch.utils.data.Dataset):
         )
 
         if digits is not None:
+            self.label_mapping = {digit: idx for idx, digit in enumerate(digits)}
+
             self.indices = [
                 i for i, (_, label) in enumerate(self.dataset) if label in digits
             ]
         else:
+            self.label_mapping = None
             self.indices = range(len(self.dataset))
 
     def __len__(self):
@@ -39,6 +42,8 @@ class CustomMNISTDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         actual_idx = self.indices[idx]
         img, label = self.dataset[actual_idx]
+        if self.label_mapping:
+            label = self.label_mapping[label]
         return img, label
 
 

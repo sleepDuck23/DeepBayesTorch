@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mlp import MLPLayer
+
+from .mlp import MLPLayer
 
 
 class EncoderNet(nn.Module):

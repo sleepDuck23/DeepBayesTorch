@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
-from convnet import ConvNet, construct_filter_shapes
-from mlp import MLPLayer
+
+from .convnet import ConvNet, construct_filter_shapes
+from .mlp import MLPLayer
 
 
 class ConvEncoder(nn.Module):
@@ -42,6 +43,9 @@ class ConvEncoder(nn.Module):
         for layer in self.enc_mlp_layers:
             out = layer(out)
         return out
+
+    def forward(self, x):
+        return self.enc_conv(x)
 
 
 class GaussianConvEncoder(nn.Module):
