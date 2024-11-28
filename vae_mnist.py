@@ -119,6 +119,9 @@ def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint):
         load_params((encoder, generator), filename, checkpoint)
     checkpoint += 1
 
+    encoder = encoder.to(device)
+    generator = generator.to(device)
+
     # now start fitting
     n_iter_ = min(n_iter, 20)
     beta = 1.0
