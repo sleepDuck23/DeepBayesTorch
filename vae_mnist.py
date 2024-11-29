@@ -3,7 +3,6 @@ from __future__ import print_function
 import os
 import sys
 
-import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
@@ -11,7 +10,6 @@ from torch.utils.data import DataLoader
 
 from alg.vae_new import construct_optimizer
 from utils.utils import init_variables, load_data, load_params, save_params
-from utils.visualisation import plot_images
 
 dimZ = 64
 dimH = 500

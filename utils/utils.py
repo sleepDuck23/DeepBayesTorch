@@ -94,34 +94,3 @@ def reset_weights(layer):
     """
     if hasattr(layer, "reset_parameters"):
         layer.reset_parameters()
-
-
-if __name__ == "__main__":
-    train_dataset, test_dataset = load_data(
-        data_name="cifar10", path="./data", labels=[0, 1], conv=True
-    )
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=64, shuffle=True
-    )
-    test_loader = torch.utils.data.DataLoader(
-        test_dataset, batch_size=64, shuffle=False
-    )
-
-    from torch import nn, optim
-
-    model = nn.Sequential(
-        nn.Linear(32 * 32 * 3, 128), nn.ReLU(), nn.Linear(128, 10)
-    )  # Example model
-    optimizer = optim.Adam(model.parameters())
-    init_variables(model, optimizer)
-
-    # Save model parameters
-    save_params(model, filename="my_model", checkpoint=1)
-
-    # Load model parameters
-    load_params(model, filename="my_model", checkpoint=1)
-
-    # Iterate through the data
-    for images, labels in train_loader:
-        print(images.shape)
-        break
