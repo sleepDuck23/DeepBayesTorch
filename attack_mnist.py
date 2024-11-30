@@ -5,9 +5,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from cleverhans.torch.attacks.fast_gradient_method import fast_gradient_method
+from cleverhans.torch.attacks.projected_gradient_descent import (
+    projected_gradient_descent,
+)
 from tqdm import tqdm
 
 from alg.vae_new import bayes_classifier, construct_optimizer
+from attacks.momentum_iterative_method import momentum_iterative_method
 from utils.utils import load_data, load_params
 from utils.visualisation import plot_images
 
@@ -49,18 +53,14 @@ def load_model(data_name, vae_type, checkpoint_index, dimZ=64, dimH=500, device=
     input_shape = (1, 28, 28)
     n_channel = 64
 
-    # Instantiate the models
     generator = Generator(input_shape, dimH, dimZ, 10, n_channel, "sigmoid", "gen")
     encoder = Encoder(input_shape, dimH, dimZ, 10, n_channel, "enc")
 
-    # Build checkpoint path
     path_name = f"{data_name}_conv_vae_{vae_type}_{dimZ}/"
     filename = f"save/{path_name}checkpoint"
 
-    # Load model parameters
     load_params((encoder, generator), filename, checkpoint_index)
 
-    # Move to device
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     encoder = encoder.to(device)
@@ -69,7 +69,7 @@ def load_model(data_name, vae_type, checkpoint_index, dimZ=64, dimH=500, device=
     return encoder, generator
 
 
-def perform_fgsm_attack(
+def perform_attacks(
     data_name, vae_type, checkpoint_index, epsilons, save_dir="./results/"
 ):
     """
@@ -82,16 +82,13 @@ def perform_fgsm_attack(
         epsilons (list): List of epsilon values for FGSM attack.
         save_dir (str): Directory to save results.
     """
-    # Load model
     encoder, generator = load_model(data_name, vae_type, checkpoint_index)
     encoder.eval()
     input_shape = (1, 28, 28)
-    n_channel = 64
     dimY = 10
-    ll = "bernoulli"  # Adjust based on likelihood used in training
-    K = 1
+    ll = "l2"
+    K = 10
 
-    # Define decoder components
     if vae_type == "A":
         dec = (generator.pyz_params, generator.pxzy_params)
         from alg.lowerbound_functions import lowerbound_A as lowerbound
@@ -116,7 +113,6 @@ def perform_fgsm_attack(
     else:
         raise ValueError(f"Unknown VAE type: {vae_type}")
 
-    # Construct optimizer functions
     enc_conv = encoder.encoder_conv
     enc_mlp = encoder.enc_mlp
     enc = (enc_conv, enc_mlp)
@@ -124,77 +120,101 @@ def perform_fgsm_attack(
     Y_ph = torch.zeros(1, dimY).to(next(encoder.parameters()).device)
     _, eval_fn = construct_optimizer(X_ph, Y_ph, enc, dec, ll, K, vae_type)
 
-    # Prepare test dataset
     _, test_dataset = load_data(data_name, path="./data", labels=None, conv=True)
     test_loader = torch.utils.data.DataLoader(
-        test_dataset, batch_size=64, shuffle=False
+        test_dataset, batch_size=100, shuffle=False
     )
 
-    # Ensure results directory exists
     os.makedirs(save_dir, exist_ok=True)
 
-    # Store accuracy results
-    accuracies = []
+    attack_methods = ["FGSM", "PGD", "MIM"]
+    accuracies = {attack: [] for attack in attack_methods}
 
     for epsilon in epsilons:
-        print(f"Running FGSM attack with epsilon={epsilon}.")
-        correct = 0
-        total = 0
-        all_adv_examples = []
+        for attack in attack_methods:
+            correct = 0
+            total = 0
 
-        for images, labels in tqdm(test_loader):
-            images, labels = images.to(next(encoder.parameters()).device), labels.to(
-                next(encoder.parameters()).device
-            )
-            one_hot_labels = torch.nn.functional.one_hot(
-                labels, num_classes=dimY
-            ).float()
+            for images, labels in tqdm(
+                test_loader, desc=f"{attack}, epsilon={epsilon}"
+            ):
+                images, labels = images.to(
+                    next(encoder.parameters()).device
+                ), labels.to(next(encoder.parameters()).device)
 
-            # Generate adversarial examples
-            adv_images = fast_gradient_method(
-                enc_conv, images, eps=epsilon, norm=np.inf
-            )
-            all_adv_examples.append(adv_images)
+                if attack == "FGSM":
+                    adv_images = fast_gradient_method(
+                        enc_conv,
+                        images,
+                        eps=epsilon,
+                        norm=np.inf,
+                        clip_min=0.0,
+                        clip_max=1.0,
+                    )
+                elif attack == "PGD":
+                    adv_images = projected_gradient_descent(
+                        enc_conv,
+                        images,
+                        eps=epsilon,
+                        eps_iter=0.01,
+                        nb_iter=100,
+                        clip_min=0.0,
+                        clip_max=1.0,
+                        rand_init=True,
+                        norm=np.inf,
+                    )
+                elif attack == "MIM":
+                    adv_images = momentum_iterative_method(
+                        enc_conv,
+                        images,
+                        eps=epsilon,
+                        eps_iter=0.01,
+                        nb_iter=100,
+                        decay_factor=1.0,
+                        clip_min=0.0,
+                        clip_max=1.0,
+                        norm=np.inf,
+                    )
+                else:
+                    raise ValueError(f"Unsupported attack: {attack}")
 
-            # Evaluate accuracy using Bayes classifier
-            y_pred = bayes_classifier(
-                adv_images, enc, dec, ll, dimY, lowerbound=lowerbound, K=10, beta=1.0
-            )
-            correct += (torch.argmax(y_pred, dim=1) == labels).sum().item()
-            total += labels.size(0)
+                y_pred = bayes_classifier(
+                    adv_images,
+                    (enc_conv, enc_mlp),
+                    dec,
+                    ll,
+                    dimY,
+                    lowerbound=lowerbound,
+                    K=10,
+                    beta=1.0,
+                )
+                correct += (torch.argmax(y_pred, dim=1) == labels).sum().item()
+                total += labels.size(0)
 
-        accuracy = correct / total
-        accuracies.append(accuracy)
+            accuracies[attack].append(correct / total)
 
-        # Save some adversarial examples for visualization
-        adv_examples_to_plot = torch.cat(all_adv_examples)[
-            :100
-        ]  # Take first 100 examples
-        print(adv_examples_to_plot.shape)
-        plot_images(
-            adv_examples_to_plot.detach().cpu(),
-            shape=(28, 28),
-            path=save_dir,
-            filename=f"{data_name}_{vae_type}_checkpoint_{checkpoint_index}_fgsm_eps_{epsilon}",
-            n_rows=10,
-            color=False,
-        )
+    fig, axes = plt.subplots(len(attack_methods), 1, figsize=(8, 12))
+    for i, attack in enumerate(attack_methods):
+        axes[i].plot(epsilons, accuracies[attack], marker="o", label=attack)
+        axes[i].set_title(f"{attack} victim acc")
+        axes[i].set_xlabel("$\varepsilon$")
+        axes[i].grid()
+        axes[i].legend()
 
-    # Plot accuracy vs epsilon
-    plt.figure()
-    plt.plot(epsilons, accuracies, marker="o")
-    plt.title(f"Accuracy vs. Epsilon ({vae_type}, Checkpoint {checkpoint_index})")
-    plt.xlabel("Epsilon")
-    plt.ylabel("Accuracy")
-    plt.grid()
+    # Save the plot
+    plt.tight_layout()
+    filename = f"{data_name}_{vae_type}_checkpoint_{checkpoint_index}_accuracy_vs_epsilon_combined.png"
     plt.savefig(
         os.path.join(
             save_dir,
-            f"{data_name}_{vae_type}_checkpoint_{checkpoint_index}_accuracy_vs_epsilon.png",
+            filename,
         )
     )
     plt.close()
-    print("Saved accuracy plot and adversarial examples.")
+    print(
+        "Saved combined accuracy plot for all attacks to",
+        os.path.join(save_dir, filename),
+    )
 
 
 if __name__ == "__main__":
@@ -222,7 +242,7 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    perform_fgsm_attack(
+    perform_attacks(
         data_name="mnist",
         vae_type=args.vae_type,
         checkpoint_index=args.checkpoint,

@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import argparse
 import os
-import sys
 
 import torch
 import torch.nn.functional as F
@@ -35,7 +34,6 @@ def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint, lr)
     input_shape = (1, 28, 28)
     n_channel = 64
 
-    # then define model
     generator = Generator(input_shape, dimH, dimZ, dimY, n_channel, "sigmoid", "gen")
     encoder = encoder(input_shape, dimH, dimZ, dimY, n_channel, "enc")
     enc_conv = encoder.encoder_conv
@@ -57,7 +55,6 @@ def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint, lr)
     else:
         raise ValueError(f"Unknown VAE type: {letter}")
 
-    # define optimisers
     X_ph = torch.zeros(batch_size, *input_shape)
     Y_ph = torch.zeros(batch_size, dimY)
     ll = "l2"
@@ -113,7 +110,6 @@ def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint, lr)
     encoder = encoder.to(device)
     generator = generator.to(device)
 
-    # now start fitting
     n_iter_ = min(n_iter, 20)
     beta = 1.0
     model_params = list(encoder.parameters()) + list(generator.parameters())
@@ -123,7 +119,6 @@ def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint, lr)
         # print training and test accuracy
         eval_acc(X_test, Y_test, "test", beta)
 
-    # save param values
     save_params((encoder, generator), filename, checkpoint)
     checkpoint += 1
 
