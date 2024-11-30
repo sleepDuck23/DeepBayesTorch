@@ -6,6 +6,11 @@ import torch.nn.functional as F
 from .convnet import ConvNet, construct_filter_shapes
 from .mlp import MLPLayer
 
+"""
+generator p(x)p(z|x)p(y|z), DBX
+note here this is actually a discriminative model: we assume p(x) = p_D(x)
+"""
+
 
 class Generator(nn.Module):
     def __init__(

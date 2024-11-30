@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import argparse
 import os
 import sys
 
@@ -11,15 +12,8 @@ from torch.utils.data import DataLoader
 from alg.vae_new import construct_optimizer
 from utils.utils import init_variables, load_data, load_params, save_params
 
-dimZ = 64
-dimH = 500
-n_iter = 100
-batch_size = 50
-lr = 1e-4
-K = 1
 
-
-def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint):
+def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint, lr):
     dimY = 10
 
     if vae_type == "A":
@@ -135,7 +129,33 @@ def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("vae_type", type=str, help="Type of VAE")
+    parser.add_argument("checkpoint", type=int, default=-1, help="Checkpoint index")
+    parser.add_argument(
+        "--dimZ", type=int, default=64, help="Dimension of latent space"
+    )
+    parser.add_argument(
+        "--dimH", type=int, default=500, help="Dimension of hidden layer"
+    )
+    parser.add_argument(
+        "--n_iter", type=int, default=100, help="Number of training iterations"
+    )
+    parser.add_argument("--batch_size", type=int, default=50, help="Batch size")
+    parser.add_argument(
+        "--K", type=int, default=10, help="Number of Monte Carlo samples"
+    )
+    parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
+    args = parser.parse_args()
     data_name = "mnist"
-    vae_type = str(sys.argv[1])
-    checkpoint = int(sys.argv[2])
-    main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint)
+    main(
+        data_name,
+        args.vae_type,
+        args.dimZ,
+        args.dimH,
+        args.n_iter,
+        args.batch_size,
+        args.K,
+        args.checkpoint,
+        args.lr,
+    )

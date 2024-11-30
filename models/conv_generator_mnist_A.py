@@ -6,6 +6,10 @@ import torch.nn.functional as F
 from .deconv import DeconvLayer
 from .mlp import MLPLayer
 
+"""
+generative model p(z)p(y|z)p(x|y, z), GFZ
+"""
+
 
 class Generator(nn.Module):
     def __init__(
