@@ -150,6 +150,7 @@ def perform_attacks(
                         norm=np.inf,
                         clip_min=0.0,
                         clip_max=1.0,
+                        sanity_checks=False,
                     )
                 elif attack == "PGD":
                     adv_images = projected_gradient_descent(
@@ -162,6 +163,7 @@ def perform_attacks(
                         clip_max=1.0,
                         rand_init=True,
                         norm=np.inf,
+                        sanity_checks=False,
                     )
                 elif attack == "MIM":
                     adv_images = momentum_iterative_method(
@@ -174,6 +176,7 @@ def perform_attacks(
                         clip_min=0.0,
                         clip_max=1.0,
                         norm=np.inf,
+                        sanity_checks=False,
                     )
                 else:
                     raise ValueError(f"Unsupported attack: {attack}")
@@ -197,7 +200,7 @@ def perform_attacks(
     for i, attack in enumerate(attack_methods):
         axes[i].plot(epsilons, accuracies[attack], marker="o", label=attack)
         axes[i].set_title(f"{attack} victim acc")
-        axes[i].set_xlabel("$\varepsilon$")
+        axes[i].set_xlabel("Epsilon")
         axes[i].grid()
         axes[i].legend()
 
