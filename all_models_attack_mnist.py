@@ -207,12 +207,11 @@ def perform_attacks(data_name, epsilons, save_dir="./results/", device=None):
     return accuracies
 
 
-def plot_results(json_file, save_dir, data_name):
+def plot_results(json_file, save_dir, data_name, epsilons):
     with open(json_file, "r") as f:
         accuracies = json.load(f)
     vae_types = list(accuracies.keys())
     attack_methods = list(accuracies[vae_types[0]].keys())
-    epsilons = list(accuracies[vae_types[0]][attack_methods[0]].keys())
     letter_to_title = {
         "A": "GFZ",
         "B": "GFY",
@@ -303,4 +302,4 @@ if __name__ == "__main__":
             args.json_file = os.path.join(
                 args.save_dir, "mnist_accuracy_vs_epsilon.json"
             )
-        plot_results(args.json_file, args.save_dir, "mnist")
+        plot_results(args.json_file, args.save_dir, "mnist", args.epsilons)
