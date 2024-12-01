@@ -70,7 +70,7 @@ def load_model(data_name, vae_type, checkpoint_index, dimZ=64, dimH=500, device=
     return encoder, generator
 
 
-def perform_attacks(data_name, epsilons, save_dir="./results/"):
+def perform_attacks(data_name, epsilons, save_dir="./results/", device=None):
     """
     Perform FGSM attack on a given model, evaluate accuracy vs. epsilon, and save results.
 
@@ -282,6 +282,12 @@ if __name__ == "__main__":
         default=None,
         help="JSON file containing the results.",
     )
+    parser.add_argument(
+        "--device",
+        type=str,
+        default=None,
+        help="Device to load the model onto (e.g., 'cuda:0').",
+    )
 
     args = parser.parse_args()
     if args.compute:
@@ -289,6 +295,7 @@ if __name__ == "__main__":
             data_name="mnist",
             epsilons=args.epsilons,
             save_dir=args.save_dir,
+            device=args.device,
         )
     if args.plot:
         if args.json_file is None:
