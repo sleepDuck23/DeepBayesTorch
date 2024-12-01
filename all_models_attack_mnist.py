@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 
 import matplotlib.pyplot as plt
@@ -8,6 +9,7 @@ from cleverhans.torch.attacks.fast_gradient_method import fast_gradient_method
 from cleverhans.torch.attacks.projected_gradient_descent import (
     projected_gradient_descent,
 )
+from matplotlib import cm
 from tqdm import tqdm
 
 from alg.vae_new import bayes_classifier, construct_optimizer
@@ -80,15 +82,7 @@ def perform_attacks(data_name, epsilons, save_dir="./results/"):
         save_dir (str): Directory to save results.
     """
     vae_types = ["A", "B", "C", "D", "E", "F", "G"]
-    letter_to_title = {
-        "A": "GFZ",
-        "B": "GFY",
-        "C": "GBZ",
-        "D": "GBY",
-        "E": "DFX",
-        "F": "DFZ",
-        "G": "DBX",
-    }
+
     attack_methods = ["FGSM", "PGD", "MIM"]
     accuracies = {vae_type: {} for vae_type in vae_types}
     for vae_type in vae_types:
@@ -205,18 +199,46 @@ def perform_attacks(data_name, epsilons, save_dir="./results/"):
 
                 accuracies[vae_type][attack].append(correct / total)
 
-    fig, axes = plt.subplots(len(attack_methods), 1, figsize=(8, 12))
+    with open(
+        os.path.join(save_dir, f"{data_name}_accuracy_vs_epsilon.json"), "w"
+    ) as f:
+        json.dump(accuracies, f)
+
+    return accuracies
+
+
+def plot_results(json_file, save_dir, data_name):
+    with open(json_file, "r") as f:
+        accuracies = json.load(f)
+    vae_types = list(accuracies.keys())
+    attack_methods = list(accuracies[vae_types[0]].keys())
+    epsilons = list(accuracies[vae_types[0]][attack_methods[0]].keys())
+    letter_to_title = {
+        "A": "GFZ",
+        "B": "GFY",
+        "C": "GBZ",
+        "D": "GBY",
+        "E": "DFX",
+        "F": "DFZ",
+        "G": "DBX",
+    }
+    fig, axes = plt.subplots(len(attack_methods), 1, figsize=(4, 12))
+    num_vae_types = len(vae_types)
+    cmap = cm.get_cmap("rainbow", num_vae_types)
     for i, attack in enumerate(attack_methods):
-        for vae_type in vae_types:
+        for j, vae_type in enumerate(vae_types):
+            color = cmap(j)
             axes[i].plot(
                 epsilons,
                 accuracies[vae_type][attack],
                 marker="o",
                 label=letter_to_title[vae_type],
+                linewidth=2,
+                color=color,
             )
         axes[i].set_title(f"{attack} victim acc")
         axes[i].set_xlabel("Epsilon")
-        axes[i].grid()
+        axes[i].grid(linestyle="--")
         axes[i].legend()
 
     # Save the plot
@@ -250,10 +272,28 @@ if __name__ == "__main__":
     parser.add_argument(
         "--save_dir", type=str, default="./results/", help="Directory to save results."
     )
+    parser.add_argument("--compute", action="store_true", help="Compute the results.")
+    parser.add_argument(
+        "--plot", action="store_true", help="Plot the results from the JSON file."
+    )
+    parser.add_argument(
+        "--json_file",
+        type=str,
+        default=None,
+        help="JSON file containing the results.",
+    )
 
     args = parser.parse_args()
-    perform_attacks(
-        data_name="mnist",
-        epsilons=args.epsilons,
-        save_dir=args.save_dir,
-    )
+    if args.compute:
+        results = perform_attacks(
+            data_name="mnist",
+            epsilons=args.epsilons,
+            save_dir=args.save_dir,
+        )
+    if args.plot:
+        if args.json_file is None:
+            print("No JSON file specified.")
+            args.json_file = os.path.join(
+                args.save_dir, "mnist_accuracy_vs_epsilon.json"
+            )
+        plot_results(args.json_file, args.save_dir, "mnist")
