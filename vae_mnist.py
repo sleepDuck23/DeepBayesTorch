@@ -53,7 +53,7 @@ def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint, lr)
     elif vae_type == "G":
         dec = (generator.pzy_params, generator.pxz_params)
     else:
-        raise ValueError(f"Unknown VAE type: {letter}")
+        raise ValueError(f"Unknown VAE type: {vae_type}")
 
     X_ph = torch.zeros(batch_size, *input_shape)
     Y_ph = torch.zeros(batch_size, dimY)
