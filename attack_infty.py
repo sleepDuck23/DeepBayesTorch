@@ -121,7 +121,7 @@ def perform_attacks(data_name, epsilons, save_dir="./results/", device=None):
         encoder, generator = load_model(data_name, vae_type, 0)
         encoder.eval()
         input_shape = (1, 28, 28) if data_name == "mnist" else (3, 32, 32)
-        dimY = 10
+        dimY = 10 if data_name != "gtsrb" else 43
         ll = "l2"
         K = 10
 
