@@ -43,6 +43,9 @@ def momentum_iterative_method(
     if norm not in [np.inf, 1, 2]:
         raise ValueError("Norm order must be np.inf, 1, or 2.")
 
+    if eps == 0:
+        return x
+
     # Ensure input is a leaf tensor
     x = x.clone().detach().requires_grad_(True)
 
