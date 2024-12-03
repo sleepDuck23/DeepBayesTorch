@@ -35,6 +35,20 @@ class GermanTrafficSignDataset(Dataset):
     def _load_training_data(self):
         # Path to the training images
         train_dir = os.path.join(self.root_dir, "GTSRB", "Final_Training", "Images")
+        data_url = "https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/GTSRB_Final_Training_Images.zip"
+        # download the data if not present
+        if not os.path.exists(train_dir):
+            # download the data under the root_dir
+            import io
+            import zipfile
+
+            import requests
+
+            print("Downloading the data...")
+            r = requests.get(data_url)
+            z = zipfile.ZipFile(io.BytesIO(r.content))
+            z.extractall(self.root_dir)
+            print("Download complete!")
 
         # Iterate over all class directories
         for class_dir in sorted(os.listdir(train_dir)):
@@ -59,6 +73,25 @@ class GermanTrafficSignDataset(Dataset):
         # Path to the test images and annotations
         test_dir = os.path.join(self.root_dir, "GTSRB", "Final_Test", "Images")
         test_csv = os.path.join(test_dir, "GT-final_test.csv")
+        data_url = "https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/GTSRB_Final_Test_Images.zip"
+        gt_url = "https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/GTSRB_Final_Test_GT.zip"
+        # download the data if not present
+        if not os.path.exists(test_dir):
+            # download the data under the root_dir
+            import io
+            import zipfile
+
+            import requests
+
+            print("Downloading the data...")
+            r = requests.get(data_url)
+            z = zipfile.ZipFile(io.BytesIO(r.content))
+            z.extractall(self.root_dir)
+            r = requests.get(gt_url)
+            z = zipfile.ZipFile(io.BytesIO(r.content))
+            z.extractall(self.root_dir)
+            os.rename(os.path.join(self.root_dir, "GT-final_test.csv"), test_csv)
+            print("Download complete")
 
         # Load the test annotations
         df = pd.read_csv(test_csv, sep=";")
