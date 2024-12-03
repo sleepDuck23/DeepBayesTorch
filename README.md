@@ -98,7 +98,7 @@ Then you can launch the experiment for $l_\infty$ attacks with different epsilon
 values, with
 
 ```bash
-python attack_infty.py --data_name mnist --compute --save_dir mnist_results --json_file mnist_infty.json
+python attack_infty.py --data_name mnist --compute --batch_size 100 --save_dir mnist_results --json_file mnist_infty.json
 ```
 
 This will compute accuracies for each attack, each model, and each epsilon. You
