@@ -53,6 +53,9 @@ class ConvEncoder(nn.Module):
             out = layer(out)
         return out
 
+    def forward(self, x):
+        return self.enc_conv(x)
+
 
 class GaussianConvEncoder(nn.Module):
     def __init__(

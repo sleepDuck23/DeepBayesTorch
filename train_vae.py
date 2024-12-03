@@ -12,27 +12,61 @@ from alg.vae_new import construct_optimizer
 from utils.utils import init_variables, load_data, load_params, save_params
 
 
-def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint, lr):
+def main(data_name, vae_type, n_iter, batch_size, K, checkpoint, lr):
     dimY = 10
 
-    if vae_type == "A":
-        from models.conv_generator_mnist_A import Generator
-    if vae_type == "B":
-        from models.conv_generator_mnist_B import Generator
-    if vae_type == "C":
-        from models.conv_generator_mnist_C import Generator
-    if vae_type == "D":
-        from models.conv_generator_mnist_D import Generator
-    if vae_type == "E":
-        from models.conv_generator_mnist_E import Generator
-    if vae_type == "F":
-        from models.conv_generator_mnist_F import Generator
-    if vae_type == "G":
-        from models.conv_generator_mnist_G import Generator
-    from models.conv_encoder_mnist import GaussianConvEncoder as encoder
+    if data_name == "mnist":
+        if vae_type == "A":
+            from models.conv_generator_mnist_A import Generator
+        elif vae_type == "B":
+            from models.conv_generator_mnist_B import Generator
+        elif vae_type == "C":
+            from models.conv_generator_mnist_C import Generator
+        elif vae_type == "D":
+            from models.conv_generator_mnist_D import Generator
+        elif vae_type == "E":
+            from models.conv_generator_mnist_E import Generator
+        elif vae_type == "F":
+            from models.conv_generator_mnist_F import Generator
+        elif vae_type == "G":
+            from models.conv_generator_mnist_G import Generator
+        else:
+            raise ValueError(f"Unknown VAE type: {vae_type}")
+        from models.conv_encoder_mnist import GaussianConvEncoder as encoder
 
-    input_shape = (1, 28, 28)
-    n_channel = 64
+        input_shape = (1, 28, 28)
+        n_channel = 64
+        dimZ = 64
+        dimH = 500
+    elif data_name == "cifar10" or data_name == "gtsrb":
+        if vae_type == "A":
+            from models.conv_generator_cifar10_A import Generator
+        elif vae_type == "B":
+            from models.conv_generator_cifar10_B import Generator
+        elif vae_type == "C":
+            from models.conv_generator_cifar10_C import Generator
+        elif vae_type == "D":
+            from models.conv_generator_cifar10_D import Generator
+        elif vae_type == "E":
+            from models.conv_generator_cifar10_E import Generator
+        elif vae_type == "F":
+            from models.conv_generator_cifar10_F import Generator
+        elif vae_type == "G":
+            from models.conv_generator_cifar10_G import Generator
+        else:
+            raise ValueError(f"Unknown VAE type: {vae_type}")
+
+        from models.conv_encoder_cifar10 import GaussianConvEncoder as encoder
+
+        input_shape = (3, 32, 32)
+        n_channel = 128
+        dimZ = 128
+        dimH = 1000
+    else:
+        raise ValueError(f"Unknown dataset: {data_name}")
+
+    if data_name == "gtsrb":
+        dimY = 43
 
     generator = Generator(input_shape, dimH, dimZ, dimY, n_channel, "sigmoid", "gen")
     encoder = encoder(input_shape, dimH, dimZ, dimY, n_channel, "enc")
@@ -125,13 +159,15 @@ def main(data_name, vae_type, dimZ, dimH, n_iter, batch_size, K, checkpoint, lr)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+
     parser.add_argument("vae_type", type=str, help="Type of VAE")
     parser.add_argument("checkpoint", type=int, default=-1, help="Checkpoint index")
     parser.add_argument(
-        "--dimZ", type=int, default=64, help="Dimension of latent space"
-    )
-    parser.add_argument(
-        "--dimH", type=int, default=500, help="Dimension of hidden layer"
+        "--data_name",
+        type=str,
+        help="Name of dataset",
+        default="mnist",
+        choices=["mnist", "cifar10", "gtsrb"],
     )
     parser.add_argument(
         "--n_iter", type=int, default=100, help="Number of training iterations"
@@ -142,12 +178,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
     args = parser.parse_args()
-    data_name = "mnist"
     main(
-        data_name,
+        args.data_name,
         args.vae_type,
-        args.dimZ,
-        args.dimH,
         args.n_iter,
         args.batch_size,
         args.K,

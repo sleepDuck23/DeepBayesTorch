@@ -34,7 +34,15 @@ def load_data(data_name, path, labels=None, conv=False, seed=0):
         test_dataset = CustomCIFAR10Dataset(
             path=path, train=False, labels=labels, conv=conv, seed=seed
         )
+    elif data_name == "gtsrb":
+        from .gtsrb import GermanTrafficSignDataset
 
+        train_dataset = GermanTrafficSignDataset(
+            root_dir=path, train=True, labels=labels
+        )
+        test_dataset = GermanTrafficSignDataset(
+            root_dir=path, train=False, labels=labels
+        )
     else:
         raise ValueError(f"Unknown dataset name: {data_name}")
 

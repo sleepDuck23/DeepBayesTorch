@@ -17,7 +17,7 @@ from attacks.momentum_iterative_method import momentum_iterative_method
 from utils.utils import load_data, load_params
 
 
-def load_model(data_name, vae_type, checkpoint_index, dimZ=64, dimH=500, device=None):
+def load_model(data_name, vae_type, checkpoint_index, device=None):
     """
     Load a trained model with given parameters.
 
@@ -32,27 +32,52 @@ def load_model(data_name, vae_type, checkpoint_index, dimZ=64, dimH=500, device=
     Returns:
         encoder, generator: The loaded encoder and generator models.
     """
-    if vae_type == "A":
-        from models.conv_generator_mnist_A import Generator
-    elif vae_type == "B":
-        from models.conv_generator_mnist_B import Generator
-    elif vae_type == "C":
-        from models.conv_generator_mnist_C import Generator
-    elif vae_type == "D":
-        from models.conv_generator_mnist_D import Generator
-    elif vae_type == "E":
-        from models.conv_generator_mnist_E import Generator
-    elif vae_type == "F":
-        from models.conv_generator_mnist_F import Generator
-    elif vae_type == "G":
-        from models.conv_generator_mnist_G import Generator
+    if data_name == "mnist":
+        if vae_type == "A":
+            from models.conv_generator_mnist_A import Generator
+        elif vae_type == "B":
+            from models.conv_generator_mnist_B import Generator
+        elif vae_type == "C":
+            from models.conv_generator_mnist_C import Generator
+        elif vae_type == "D":
+            from models.conv_generator_mnist_D import Generator
+        elif vae_type == "E":
+            from models.conv_generator_mnist_E import Generator
+        elif vae_type == "F":
+            from models.conv_generator_mnist_F import Generator
+        elif vae_type == "G":
+            from models.conv_generator_mnist_G import Generator
+        else:
+            raise ValueError(f"Unknown VAE type: {vae_type}")
+        input_shape = (1, 28, 28)
+        n_channel = 64
+        dimZ = 64
+        dimH = 500
+    elif data_name == "cifar10" or data_name == "gtsrb":
+        if vae_type == "A":
+            from models.conv_generator_cifar10_A import Generator
+        elif vae_type == "B":
+            from models.conv_generator_cifar10_B import Generator
+        elif vae_type == "C":
+            from models.conv_generator_cifar10_C import Generator
+        elif vae_type == "D":
+            from models.conv_generator_cifar10_D import Generator
+        elif vae_type == "E":
+            from models.conv_generator_cifar10_E import Generator
+        elif vae_type == "F":
+            from models.conv_generator_cifar10_F import Generator
+        elif vae_type == "G":
+            from models.conv_generator_cifar10_G import Generator
+        else:
+            raise ValueError(f"Unknown VAE type: {vae_type}")
+        input_shape = (3, 32, 32)
+        n_channel = 128
+        dimZ = 128
+        dimH = 1000
     else:
-        raise ValueError(f"Unknown VAE type: {vae_type}")
+        raise ValueError(f"Unknown dataset: {data_name}")
 
     from models.conv_encoder_mnist import GaussianConvEncoder as Encoder
-
-    input_shape = (1, 28, 28)
-    n_channel = 64
 
     generator = Generator(input_shape, dimH, dimZ, 10, n_channel, "sigmoid", "gen")
     encoder = Encoder(input_shape, dimH, dimZ, 10, n_channel, "enc")
@@ -88,7 +113,7 @@ def perform_attacks(data_name, epsilons, save_dir="./results/", device=None):
     for vae_type in vae_types:
         encoder, generator = load_model(data_name, vae_type, 0)
         encoder.eval()
-        input_shape = (1, 28, 28)
+        input_shape = (1, 28, 28) if data_name == "mnist" else (3, 32, 32)
         dimY = 10
         ll = "l2"
         K = 10
@@ -262,6 +287,14 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--data_name",
+        type=str,
+        default="mnist",
+        choices=["mnist", "cifar10", "gtsrb"],
+        help="Dataset name (e.g., 'mnist').",
+    )
+
+    parser.add_argument(
         "--epsilons",
         type=float,
         nargs="+",
@@ -291,7 +324,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.compute:
         results = perform_attacks(
-            data_name="mnist",
+            data_name=args.data_name,
             epsilons=args.epsilons,
             save_dir=args.save_dir,
             device=args.device,
