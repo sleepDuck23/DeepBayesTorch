@@ -78,8 +78,8 @@ def load_model(data_name, vae_type, checkpoint_index, device=None):
         dimY = 10
     else:
         raise ValueError(f"Unknown dataset: {data_name}")
-    
-    if data_name == "gttsrb":
+
+    if data_name == "gtsrb":
         dimY = 43
 
     from models.conv_encoder_mnist import GaussianConvEncoder as Encoder
