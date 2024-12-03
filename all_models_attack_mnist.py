@@ -49,6 +49,8 @@ def load_model(data_name, vae_type, checkpoint_index, device=None):
             from models.conv_generator_mnist_G import Generator
         else:
             raise ValueError(f"Unknown VAE type: {vae_type}")
+        from models.conv_encoder_mnist import GaussianConvEncoder as Encoder
+
         input_shape = (1, 28, 28)
         n_channel = 64
         dimZ = 64
@@ -71,6 +73,8 @@ def load_model(data_name, vae_type, checkpoint_index, device=None):
             from models.conv_generator_cifar10_G import Generator
         else:
             raise ValueError(f"Unknown VAE type: {vae_type}")
+        from models.conv_encoder_cifar10 import GaussianConvEncoder as Encoder
+
         input_shape = (3, 32, 32)
         n_channel = 128
         dimZ = 128
@@ -81,8 +85,6 @@ def load_model(data_name, vae_type, checkpoint_index, device=None):
 
     if data_name == "gtsrb":
         dimY = 43
-
-    from models.conv_encoder_mnist import GaussianConvEncoder as Encoder
 
     generator = Generator(input_shape, dimH, dimZ, dimY, n_channel, "sigmoid", "gen")
     encoder = Encoder(input_shape, dimH, dimZ, dimY, n_channel, "enc")
