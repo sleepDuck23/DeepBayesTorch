@@ -53,6 +53,7 @@ def load_model(data_name, vae_type, checkpoint_index, device=None):
         n_channel = 64
         dimZ = 64
         dimH = 500
+        dimY = 10
     elif data_name == "cifar10" or data_name == "gtsrb":
         if vae_type == "A":
             from models.conv_generator_cifar10_A import Generator
@@ -74,13 +75,17 @@ def load_model(data_name, vae_type, checkpoint_index, device=None):
         n_channel = 128
         dimZ = 128
         dimH = 1000
+        dimY = 10
     else:
         raise ValueError(f"Unknown dataset: {data_name}")
+    
+    if data_name == "gttsrb":
+        dimY = 43
 
     from models.conv_encoder_mnist import GaussianConvEncoder as Encoder
 
-    generator = Generator(input_shape, dimH, dimZ, 10, n_channel, "sigmoid", "gen")
-    encoder = Encoder(input_shape, dimH, dimZ, 10, n_channel, "enc")
+    generator = Generator(input_shape, dimH, dimZ, dimY, n_channel, "sigmoid", "gen")
+    encoder = Encoder(input_shape, dimH, dimZ, dimY, n_channel, "enc")
 
     path_name = f"{data_name}_conv_vae_{vae_type}_{dimZ}/"
     filename = f"save/{path_name}checkpoint"
