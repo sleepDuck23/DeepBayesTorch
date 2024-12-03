@@ -102,7 +102,9 @@ def load_model(data_name, vae_type, checkpoint_index, device=None):
     return encoder, generator
 
 
-def perform_attacks(data_name, epsilons, save_dir="./results/", device=None):
+def perform_attacks(
+    data_name, epsilons, batch_size, save_dir="./results/", device=None
+):
     """
     Perform FGSM attack on a given model, evaluate accuracy vs. epsilon, and save results.
 
@@ -158,7 +160,7 @@ def perform_attacks(data_name, epsilons, save_dir="./results/", device=None):
 
         _, test_dataset = load_data(data_name, path="./data", labels=None, conv=True)
         test_loader = torch.utils.data.DataLoader(
-            test_dataset, batch_size=100, shuffle=False
+            test_dataset, batch_size=batch_size, shuffle=False
         )
 
         os.makedirs(save_dir, exist_ok=True)
@@ -309,6 +311,12 @@ if __name__ == "__main__":
         help="List of epsilon values for FGSM attack.",
     )
     parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=100,
+        help="Batch size for evaluating the model.",
+    )
+    parser.add_argument(
         "--save_dir", type=str, default="./results/", help="Directory to save results."
     )
     parser.add_argument("--compute", action="store_true", help="Compute the results.")
@@ -333,6 +341,7 @@ if __name__ == "__main__":
         results = perform_attacks(
             data_name=args.data_name,
             epsilons=args.epsilons,
+            batch_size=args.batch_size,
             save_dir=args.save_dir,
             device=args.device,
         )
