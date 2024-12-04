@@ -349,6 +349,6 @@ if __name__ == "__main__":
         if args.json_file is None:
             print("No JSON file specified.")
             args.json_file = os.path.join(
-                args.save_dir, "mnist_accuracy_vs_epsilon.json"
+                args.save_dir, f"{args.data_name}_accuracy_vs_epsilon.json"
             )
-        plot_results(args.json_file, args.save_dir, "mnist", args.epsilons)
+        plot_results(args.json_file, args.save_dir, args.data_name, args.epsilons)
