@@ -1,40 +1,46 @@
 """The MomentumIterativeMethod attack."""
 
+from typing import Optional
+
 import numpy as np
 import torch
 from cleverhans.torch.utils import optimize_linear
 
 
 def momentum_iterative_method(
-    model_fn,
-    x,
-    eps=0.3,
-    eps_iter=0.06,
-    nb_iter=10,
-    norm=np.inf,
-    clip_min=None,
-    clip_max=None,
-    y=None,
-    targeted=False,
-    decay_factor=1.0,
-    sanity_checks=True,
+    model_fn: torch.nn.Module,
+    x: torch.Tensor,
+    eps: float = 0.3,
+    eps_iter: float = 0.06,
+    nb_iter: int = 10,
+    norm: float = np.inf,
+    clip_min: Optional[float] = None,
+    clip_max: Optional[float] = None,
+    y: Optional[torch.Tensor] = None,
+    targeted: bool = False,
+    decay_factor: float = 1.0,
+    sanity_checks: bool = True,
 ):
     """
     PyTorch implementation of Momentum Iterative Method (MIM).
-    :param model_fn: a callable that takes an input tensor and returns the model logits.
-    :param x: input tensor.
-    :param eps: maximum distortion of adversarial example compared to original input.
-    :param eps_iter: step size for each attack iteration.
-    :param nb_iter: Number of attack iterations.
-    :param norm: Order of the norm. Possible values: np.inf, 1 or 2.
-    :param clip_min: Minimum input component value.
-    :param clip_max: Maximum input component value.
-    :param y: Tensor with true labels. If targeted is true, provide the target label. Otherwise,
-              use true labels or model predictions as ground truth.
-    :param targeted: bool. If True, create a targeted attack; otherwise untargeted.
-    :param decay_factor: Decay factor for the momentum term.
-    :param sanity_checks: bool. If True, perform sanity checks on inputs and outputs.
-    :return: Adversarial examples as a PyTorch tensor.
+
+    Args:
+        model_fn (callable): A callable that takes an input tensor and returns the model logits.
+        x (torch.Tensor): Input tensor.
+        eps (float): Maximum distortion of adversarial example compared to the original input.
+        eps_iter (float): Step size for each attack iteration.
+        nb_iter (int): Number of attack iterations.
+        norm (Union[int, float]): Order of the norm. Possible values: `np.inf`, `1`, or `2`.
+        clip_min (float): Minimum input component value.
+        clip_max (float): Maximum input component value.
+        y (torch.Tensor, optional): Tensor with true labels. If `targeted` is True, provide the target label.
+            Otherwise, use true labels or model predictions as ground truth.
+        targeted (bool): If True, create a targeted attack; otherwise, an untargeted attack.
+        decay_factor (float): Decay factor for the momentum term.
+        sanity_checks (bool): If True, perform sanity checks on inputs and outputs.
+
+    Returns:
+        torch.Tensor: Adversarial examples as a PyTorch tensor.
     """
 
     if norm == 1:
@@ -46,7 +52,6 @@ def momentum_iterative_method(
     if eps == 0:
         return x
 
-    # Ensure input is a leaf tensor
     x = x.clone().detach().requires_grad_(True)
 
     if y is None:
