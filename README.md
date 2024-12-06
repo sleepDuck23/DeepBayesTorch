@@ -105,5 +105,5 @@ This will compute accuracies for each attack, each model, and each epsilon. You
 can then plot the results with
 
 ```bash
-python all_models_attack_mnist.py --data_name mnist --plot --save_dir mnist_results --json_file mnist_infty.json
+python attack_infty.py --data_name mnist --plot --save_dir mnist_results --json_file mnist_infty.json
 ```
