@@ -3,9 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import pickle
-import sys, os
-PATH = '../'
-sys.path.extend([PATH+'alg/', PATH+'models/', PATH+'utils/'])
+import os
 
 
 class BayesModel:
@@ -152,7 +150,8 @@ def load_bayes_classifier(data_name, vae_type, fea_layer, K, checkpoint=0, conv=
 
     # Feature extractor
     from vgg_cifar10 import cifar10vgg
-    cnn_model = cifar10vgg()  # Placeholder for actual model
+    path = 'load/vgg_model/'
+    cnn_model = cifar10vgg(path, train=False)  # Placeholder for actual model
     fea_op = FeatureExtractor(cnn_model, fea_layer)
 
     dimF = fea_op(torch.randn(1, *input_shape)).size(1)
